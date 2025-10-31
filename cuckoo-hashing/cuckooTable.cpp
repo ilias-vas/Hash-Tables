@@ -7,32 +7,41 @@
 //https://github.com/microsoft/Kuku/tree/main
 //https://en.wikipedia.org/wiki/Tabulation_hashing
 class CuckooTable  {
-    private: 
+    private:
+        uint64_t table[8][256];
         uint64_t generateRandomUInt64_T() {
             std::random_device random;
             std::mt19937_64 generate(random());
             std::uniform_int_distribution<uint64_t> distribution;
             return distribution(generate);
         };
-        std::vector<std::vector<uint64_t>> populateTable(std::vector<std::vector<std::uint64_t>> table) {
-        for (int i = 0; i < 8; i++) {
-            for (int j = 0; j < 256; j++) {
-                table[i][j] = generateRandomUInt64_T();
-            }
-        }
-        return table;
-        }
 
     public: 
+        CuckooTable() {
+            for (int i = 0; i < 8; i++) {
+                for (int j = 0; j < 256; j++) {
+                    table[i][j] = generateRandomUInt64_T();
+            }
+        }
+        }
+        uint64_t tabulationHash(uint64_t key) {
+            uint64_t residual = 0;
+            for (int i = 0; i < 8; i++) {
+                residual ^= table[i][(char)(key >> 8*i)];
+            }
+            return residual;
+        }
         void insert(int item) {
             std::ignore = item;
         }
 
         bool contains(int item) {
-            return true;
+            return true; //have to check stash also if going to implement that
         }
 
-        void tabulationHash(int item) {
-            std::ignore = item;
+        void rehash() {
+            //
         }
+
+
 };
