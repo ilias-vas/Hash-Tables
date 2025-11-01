@@ -8,26 +8,34 @@
 //https://en.wikipedia.org/wiki/Tabulation_hashing
 class CuckooTable  {
     private:
-        uint64_t table[8][256];
+        std::pair<std::uint64_t, std::uint64_t> table[8][256];
         uint64_t generateRandomUInt64_T() {
             std::random_device random;
             std::mt19937_64 generate(random());
             std::uniform_int_distribution<uint64_t> distribution;
             return distribution(generate);
         };
-
     public: 
         CuckooTable() {
             for (int i = 0; i < 8; i++) {
                 for (int j = 0; j < 256; j++) {
-                    table[i][j] = generateRandomUInt64_T();
+                    auto first = generateRandomUInt64_T();
+                    auto second = generateRandomUInt64_T();
+                    table[i][j] = std::make_pair(first, second);
             }
         }
         }
-        uint64_t tabulationHash(uint64_t key) {
+        uint64_t firstTabulationHash(uint64_t key) {
             uint64_t residual = 0;
             for (int i = 0; i < 8; i++) {
-                residual ^= table[i][(char)(key >> 8*i)];
+                residual ^= table[i][(char)(key >> 8*i)].first;
+            }
+            return residual;
+        }
+        uint64_t secondTabulationHash(uint64_t key) {
+            uint64_t residual = 0;
+            for (int i = 0; i < 8; i++) {
+                residual ^= table[i][(char)(key >> 8*i)].second;
             }
             return residual;
         }
@@ -36,12 +44,10 @@ class CuckooTable  {
         }
 
         bool contains(int item) {
-            return true; //have to check stash also if going to implement that
+            return true;
         }
 
         void rehash() {
             //
         }
-
-
 };
