@@ -20,7 +20,7 @@ class CuckooTable  {
         };
     public: 
         CuckooTable() {
-            capacity = 6; //initialize based on this
+            capacity = 8; //initialize based on this, needs to be power of two
             for (int i = 0; i < 8; i++) {
                 for (int j = 0; j < 256; j++) {
                     auto first = generateRandomUInt64_T();
