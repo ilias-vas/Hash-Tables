@@ -46,7 +46,29 @@ uint64_t CuckooTable::secondTabulationHash(uint64_t item) {
 }
 
 bool CuckooTable::attemptInsert(uint64_t item) { //basically to know if we need to rehash
+    if (item == 0) {
+        return false; //not having another array to track locations etc means we use 0 as a sentinel
+    }
 
+    uint64_t current = item;
+    for (int kicks = 0; kicks < maxKicks; kicks++) {
+        uint64_t firstHash = firstTabulationHash(current);
+        uint64_t secondHash = secondTabulationHash(current);
+        if (table1[firstHash] == 0) {
+            table1[firstHash] = current;
+            return true;
+        }
+
+        if (table2[secondHash] == 0) {
+            table2[secondHash] = current;
+            return true;
+        }
+
+        uint64_t temp = table1[firstHash]; //evicting an element
+        table1[firstHash] = current;
+        current = temp;
+    }
+    return false; //max number of kicks
 }
 
 void CuckooTable::insert(uint64_t item) {
@@ -62,5 +84,6 @@ bool CuckooTable::remove(uint64_t item) {
 }
 
 void CuckooTable::rehash() {
-    
+
 }
+
