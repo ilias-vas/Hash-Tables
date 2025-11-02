@@ -5,6 +5,7 @@
 #include <random>
 class CuckooTable {
     private:
+        std::pair<uint64_t, uint64_t> table[8][256];
         std::vector<uint64_t> table1;
         std::vector<uint64_t> table2;
         int capacity;
@@ -15,7 +16,7 @@ class CuckooTable {
     public:
         CuckooTable(int capacity = 16);
         void insert(uint64_t item);
-        bool conatins(uint64_t item);
+        bool contains(uint64_t item);
         bool remove(uint64_t item);
         uint64_t firstTabulationHash(uint64_t item);
         uint64_t secondTabulationHash(uint64_t item);

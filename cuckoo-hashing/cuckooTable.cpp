@@ -44,3 +44,23 @@ uint64_t CuckooTable::secondTabulationHash(uint64_t item) {
     }
     return residual & capacity - 1;
 }
+
+bool CuckooTable::attemptInsert(uint64_t item) { //basically to know if we need to rehash
+
+}
+
+void CuckooTable::insert(uint64_t item) {
+    
+}
+
+bool CuckooTable::contains(uint64_t item) {
+
+}
+
+bool CuckooTable::remove(uint64_t item) {
+
+}
+
+void CuckooTable::rehash() {
+    
+}
