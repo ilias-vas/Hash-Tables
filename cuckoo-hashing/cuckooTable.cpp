@@ -53,11 +53,12 @@ bool CuckooTable::attemptInsert(uint64_t item) { //basically to know if we need 
     }
 
     uint64_t current = item;
+    static std::random_device rd;
+    static std::mt19937 gen(rd());
+    static std::uniform_int_distribution<int> dist(0, 1);
+    bool kickFromTable = (dist(gen) == 0); //pick a table to kick from randomly
 
     for (int kicks = 0; kicks < maxKicks; kicks++) {
-        static std::random_device rd;
-        static std::mt19937 gen(rd());
-        static std::uniform_int_distribution<int> dist(0, 1);
         uint64_t firstHash = firstTabulationHash(current);
         uint64_t secondHash = secondTabulationHash(current);
         if (table1[firstHash] == 0) {
@@ -71,9 +72,15 @@ bool CuckooTable::attemptInsert(uint64_t item) { //basically to know if we need 
             elementsNum += 1;
             return true;
         }
-                    uint64_t temp = table1[firstHash];
+        if (kickFromTable) {
+            uint64_t temp = table1[firstHash];
             table1[firstHash] = current;
             current = temp;
+        } else {
+            uint64_t temp = table2[secondHash];
+            table2[secondHash] = current;
+            current = temp;
+        }
         
     }
     return false; //max number of kicks
