@@ -1,6 +1,7 @@
 #include <gtest/gtest.h>
 #include "cuckooTable.hpp"
 #include <random>
+#include <unordered_set>
 
 TEST(CuckooTableTests, BasicInsertionAndDeletion) {
     CuckooTable table(8);
@@ -44,7 +45,6 @@ TEST(CuckooTableTests, BasicRemove) {
 
 TEST(CuckooTableTests, RemoveNonExistent) {
     CuckooTable table(16);
-    
     EXPECT_FALSE(table.remove(42));
 }
 TEST(CuckooTableTests, RehashOnManyInsertions) {

@@ -53,7 +53,11 @@ bool CuckooTable::attemptInsert(uint64_t item) { //basically to know if we need 
     }
 
     uint64_t current = item;
+
     for (int kicks = 0; kicks < maxKicks; kicks++) {
+        static std::random_device rd;
+        static std::mt19937 gen(rd());
+        static std::uniform_int_distribution<int> dist(0, 1);
         uint64_t firstHash = firstTabulationHash(current);
         uint64_t secondHash = secondTabulationHash(current);
         if (table1[firstHash] == 0) {
@@ -67,13 +71,14 @@ bool CuckooTable::attemptInsert(uint64_t item) { //basically to know if we need 
             elementsNum += 1;
             return true;
         }
-
-        uint64_t temp = table1[firstHash]; //evicting an element
-        table1[firstHash] = current;
-        current = temp;
+                    uint64_t temp = table1[firstHash];
+            table1[firstHash] = current;
+            current = temp;
+        
     }
     return false; //max number of kicks
 }
+
 
 void CuckooTable::insert(uint64_t item) {
     if (contains(item)) return;
@@ -98,10 +103,12 @@ bool CuckooTable::remove(uint64_t item) {
 
     if (table1[firstHash] == item) {
         table1[firstHash] = 0;
+        elementsNum --;
         return true;
     }
     if (table2[secondHash] == item) {
         table2[secondHash] = 0;
+        elementsNum--;
         return true;
     }
     return false; 
@@ -125,9 +132,9 @@ void CuckooTable::rehash() {
     std::fill(table2.begin(), table2.end(), 0);
     table1.resize(capacity, 0);
     table2.resize(capacity, 0);
-
+    elementsNum = 0;
     for (uint64_t item : vals) {
-        attemptInsert(item);
+        if(!attemptInsert(item)) rehash();
     }
 }
 
