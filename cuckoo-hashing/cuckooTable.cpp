@@ -6,7 +6,9 @@
 //https://stackoverflow.com/questions/56655002/generating-a-random-uint64-t
 //https://github.com/microsoft/Kuku/tree/main
 //https://en.wikipedia.org/wiki/Tabulation_hashing
-CuckooTable::CuckooTable(int capacity) {
+CuckooTable::CuckooTable(int cap){
+    capacity = cap;
+    elementsNum = 0;
     table1.resize(capacity, 0);
     table2.resize(capacity, 0);
     initializeTable();
@@ -34,7 +36,7 @@ uint64_t CuckooTable::firstTabulationHash(uint64_t item) {
     for (int i = 0; i < 8; i++) {
         residual ^= table[i][(char)(item >> 8*i)].first;
     }
-    return residual & capacity - 1;
+    return residual & (capacity - 1);
 }
 
 uint64_t CuckooTable::secondTabulationHash(uint64_t item) {
@@ -42,7 +44,7 @@ uint64_t CuckooTable::secondTabulationHash(uint64_t item) {
     for (int i = 0; i < 8; i++) {
         residual ^= table[i][(char)(item >> 8*i)].second;
     }
-    return residual & capacity - 1;
+    return residual & (capacity - 1);
 }
 
 bool CuckooTable::attemptInsert(uint64_t item) { //basically to know if we need to rehash
@@ -56,11 +58,13 @@ bool CuckooTable::attemptInsert(uint64_t item) { //basically to know if we need 
         uint64_t secondHash = secondTabulationHash(current);
         if (table1[firstHash] == 0) {
             table1[firstHash] = current;
+            elementsNum += 1;
             return true;
         }
 
         if (table2[secondHash] == 0) {
             table2[secondHash] = current;
+            elementsNum += 1;
             return true;
         }
 
@@ -72,18 +76,66 @@ bool CuckooTable::attemptInsert(uint64_t item) { //basically to know if we need 
 }
 
 void CuckooTable::insert(uint64_t item) {
+    if (contains(item)) return;
+    if (item == 0) return; //otherwise we loop forever !
+    while (!attemptInsert(item)) { //likelihood of this running any more than once is extremely slim
+        rehash();
+    }
     
 }
 
 bool CuckooTable::contains(uint64_t item) {
-
+    if (item == 0) return false;
+    uint64_t firstHash = firstTabulationHash(item);
+    uint64_t secondHash = secondTabulationHash(item);
+    return table1[firstHash] == item || table2[secondHash] == item;
 }
 
 bool CuckooTable::remove(uint64_t item) {
+    if (item == 0) return false;
+    uint64_t firstHash = firstTabulationHash(item);
+    uint64_t secondHash = secondTabulationHash(item);
 
+    if (table1[firstHash] == item) {
+        table1[firstHash] = 0;
+        return true;
+    }
+    if (table2[secondHash] == item) {
+        table2[secondHash] = 0;
+        return true;
+    }
+    return false; 
 }
 
 void CuckooTable::rehash() {
+    std::vector<uint64_t> vals;
+    for (uint64_t val : table1) {
+        if (val != 0) {
+            vals.push_back(val);
+        }
+    }
+    for (uint64_t val : table2) {
+        if (val != 0) {
+            vals.push_back(val);
+        }
+    }
 
+    capacity *= 2;
+    std::fill(table1.begin(), table1.end(), 0);
+    std::fill(table2.begin(), table2.end(), 0);
+    table1.resize(capacity, 0);
+    table2.resize(capacity, 0);
+
+    for (uint64_t item : vals) {
+        attemptInsert(item);
+    }
+}
+
+int CuckooTable::getElementCount() {
+    return elementsNum;
+}
+
+int CuckooTable::getCapacity() {
+    return capacity; //capacity of one table
 }
 
